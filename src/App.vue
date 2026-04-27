@@ -44,6 +44,10 @@
             <el-icon><Collection /></el-icon>
             <span>计量单位</span>
           </el-menu-item>
+          <el-menu-item index="material">
+            <el-icon><Document /></el-icon>
+            <span>资料中心</span>
+          </el-menu-item>
           <el-menu-item index="operationLog">
             <el-icon><Tickets /></el-icon>
             <span>操作记录</span>
@@ -83,7 +87,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import { Box, Collection, Goods, House, Tickets } from '@element-plus/icons-vue'
+import { Box, Collection, Document, Goods, House, Tickets } from '@element-plus/icons-vue'
 import { getTenantId, setTenantId } from './api/wms'
 import DashboardPage from './pages/DashboardPage.vue'
 import SpuPage from './pages/SpuPage.vue'
@@ -96,6 +100,7 @@ import InventoryPage from './pages/InventoryPage.vue'
 import InventoryLogPage from './pages/InventoryLogPage.vue'
 import UnitPage from './pages/UnitPage.vue'
 import OperationLogPage from './pages/OperationLogPage.vue'
+import MaterialPage from './pages/MaterialPage.vue'
 
 const menuMeta = {
   dashboard: { group: '概览', title: '工作台' },
@@ -108,6 +113,7 @@ const menuMeta = {
   inventory: { group: '仓储管理', title: '库存大盘' },
   inventoryLog: { group: '仓储管理', title: '库存日志' },
   unit: { group: '基础资料', title: '计量单位' },
+  material: { group: '基础资料', title: '资料中心' },
   operationLog: { group: '系统管理', title: '操作记录' }
 }
 
@@ -122,6 +128,7 @@ const pageComponents = {
   inventory: InventoryPage,
   inventoryLog: InventoryLogPage,
   unit: UnitPage,
+  material: MaterialPage,
   operationLog: OperationLogPage
 }
 

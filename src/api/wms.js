@@ -251,6 +251,23 @@ export const inventoryLogApi = {
   }
 }
 
+export const materialApi = {
+  page(params) {
+    return post('/api/admin/generic/object/page', { ...params, bizType: 'PR_SOURCE' })
+  },
+  detail(id) {
+    return request(`/api/admin/generic/object/${id}`)
+  },
+  save(payload) {
+    return post('/api/admin/generic/object/save', { ...payload, bizType: 'PR_SOURCE' })
+  },
+  upload(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return requestForm('/api/open/openclaw/media/upload?bizType=material', formData)
+  }
+}
+
 export const statusOptions = [
   { label: '启用', value: 1 },
   { label: '禁用', value: 0 }
