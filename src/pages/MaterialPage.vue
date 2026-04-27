@@ -50,14 +50,25 @@
       <el-table-column label="资源图片" min-width="200">
         <template #default="{ row }">
           <div class="image-list">
-            <el-image
-              v-for="(item, index) in getImageUrls(row.resources)"
-              :key="index"
-              :src="item"
-              :preview-src-list="getImageUrls(row.resources)"
-              fit="cover"
-              class="table-image"
-            />
+            <template v-if="getImageUrls(row.resources).length > 0">
+              <el-image
+                v-for="(url, index) in getImageUrls(row.resources)"
+                :key="index"
+                :src="url"
+                :preview-src-list="getImageUrls(row.resources)"
+                :initial-index="index"
+                fit="cover"
+                class="table-image"
+                preview-teleported
+              >
+                <template #error>
+                  <div class="image-error">
+                    <el-icon><Picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+            </template>
+            <span v-else class="no-image">-</span>
           </div>
         </template>
       </el-table-column>
@@ -146,7 +157,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { Delete, Edit, Plus, Refresh, Search, Upload } from '@element-plus/icons-vue'
+import { Delete, Edit, Picture, Plus, Refresh, Search, Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { materialApi } from '../api/wms'
 import { statusTagType } from '../utils/display'
@@ -318,6 +329,22 @@ async function submitForm() {
   border-radius: 4px;
   border: 1px solid #dce2ea;
   cursor: pointer;
+}
+
+.image-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 20px;
+}
+
+.no-image {
+  color: #909399;
+  font-size: 14px;
 }
 
 .material-dialog-form {
