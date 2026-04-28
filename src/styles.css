@@ -127,6 +127,25 @@ select {
   background: #ffffff;
 }
 
+.heading-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.user-button {
+  margin-top: 22px;
+  min-width: 132px;
+}
+
+.user-button span {
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: #4f6f52;
@@ -347,6 +366,10 @@ h1 {
   gap: 0 18px;
 }
 
+.single-column-form {
+  grid-template-columns: 1fr;
+}
+
 .dialog-form .full-line {
   grid-column: 1 / -1;
 }
@@ -364,6 +387,82 @@ h1 {
   margin-left: 24px;
   color: #8a95a5;
   font-size: 12px;
+}
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: #eef2f6;
+}
+
+.login-panel {
+  width: min(420px, 100%);
+  padding: 28px 30px 30px;
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(31, 42, 61, 0.12);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.login-brand strong,
+.login-brand span {
+  display: block;
+}
+
+.login-brand strong {
+  color: #172033;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.login-brand span {
+  margin-top: 2px;
+  color: #667386;
+  font-size: 13px;
+}
+
+.login-form {
+  padding-top: 10px;
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.drawer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.drawer-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.drawer-summary strong {
+  color: #172033;
+  font-size: 15px;
+}
+
+.drawer-summary span {
+  color: #667386;
+  font-size: 13px;
 }
 
 @media (max-width: 1000px) {
@@ -415,6 +514,10 @@ h1 {
   .filter-actions {
     min-width: 100%;
   }
+
+  .heading-actions {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 680px) {
@@ -451,6 +554,25 @@ h1 {
   .tenant-form {
     width: 100%;
     margin-top: 14px;
+  }
+
+  .heading-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .user-button {
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .login-page {
+    align-items: flex-start;
+    padding: 18px;
+  }
+
+  .login-panel {
+    padding: 22px 18px;
   }
 
   .filter-form {

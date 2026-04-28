@@ -1,4 +1,5 @@
 const TENANT_KEY = 'yaowang-mini-erp-tenant-id'
+const AUTH_KEY = 'yaowang-mini-erp-auth-session'
 
 export function getTenantId() {
   return localStorage.getItem(TENANT_KEY) || '1'
@@ -8,22 +9,79 @@ export function setTenantId(value) {
   localStorage.setItem(TENANT_KEY, String(value || '1').trim() || '1')
 }
 
+export function getAuthSession() {
+  try {
+    const session = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null')
+    return session && session.token ? session : null
+  } catch {
+    return null
+  }
+}
+
+export function setAuthSession(session) {
+  const normalized = {
+    token: session?.token || '',
+    userId: session?.userId,
+    userName: session?.userName || '',
+    account: session?.account || '',
+    tenantId: session?.tenantId
+  }
+
+  if (normalized.tenantId) {
+    setTenantId(normalized.tenantId)
+  }
+  localStorage.setItem(AUTH_KEY, JSON.stringify(normalized))
+}
+
+export function clearAuthSession() {
+  localStorage.removeItem(AUTH_KEY)
+}
+
 function cleanPayload(payload = {}) {
   return Object.fromEntries(
     Object.entries(payload).filter(([, value]) => value !== null && value !== undefined)
   )
 }
 
-async function request(path, options = {}) {
-  const headers = {
-    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-    ...options.headers,
+function buildHeaders(headers = {}, includeJson = false) {
+  const session = getAuthSession()
+  const result = {
+    ...(includeJson ? { 'Content-Type': 'application/json' } : {}),
+    ...headers,
     'X-Tenant-Id': getTenantId()
   }
 
+  if (session?.token) {
+    result.Authorization = `Bearer ${session.token}`
+  }
+  if (session?.userId) {
+    result['X-User-Id'] = String(session.userId)
+  }
+  if (session?.userName || session?.account) {
+    result['X-User-Name'] = toHeaderValue(session.userName, session.account)
+  }
+
+  return result
+}
+
+function toHeaderValue(value, fallback = '') {
+  const text = String(value || '')
+  if (/^[\x20-\x7E]*$/.test(text)) {
+    return text
+  }
+
+  const fallbackText = String(fallback || '')
+  if (/^[\x20-\x7E]*$/.test(fallbackText)) {
+    return fallbackText
+  }
+
+  return encodeURIComponent(text)
+}
+
+async function request(path, options = {}) {
   const response = await fetch(path, {
     ...options,
-    headers,
+    headers: buildHeaders(options.headers, Boolean(options.body)),
     body: options.body ? JSON.stringify(cleanPayload(options.body)) : undefined
   })
 
@@ -43,9 +101,7 @@ async function request(path, options = {}) {
 async function requestForm(path, formData) {
   const response = await fetch(path, {
     method: 'POST',
-    headers: {
-      'X-Tenant-Id': getTenantId()
-    },
+    headers: buildHeaders(),
     body: formData
   })
 
@@ -65,10 +121,7 @@ async function requestForm(path, formData) {
 async function requestBlob(path, options = {}) {
   const response = await fetch(path, {
     ...options,
-    headers: {
-      ...options.headers,
-      'X-Tenant-Id': getTenantId()
-    }
+    headers: buildHeaders(options.headers)
   })
 
   if (!response.ok) {
@@ -105,6 +158,18 @@ function post(path, body) {
     method: 'POST',
     body
   })
+}
+
+export const authApi = {
+  login(payload) {
+    return post('/api/admin/auth/login', payload)
+  },
+  changePassword(payload) {
+    return post('/api/admin/auth/change-password', payload)
+  },
+  resetPassword(payload) {
+    return post('/api/admin/auth/reset-password', payload)
+  }
 }
 
 export const warehouseApi = {
@@ -265,6 +330,39 @@ export const materialApi = {
     const formData = new FormData()
     formData.append('file', file)
     return requestForm('/api/open/openclaw/media/upload?bizType=material', formData)
+  }
+}
+
+export const partnerApi = {
+  page(params) {
+    return post('/api/admin/partner/tenant/page', params)
+  },
+  detail(id) {
+    return request(`/api/admin/partner/tenant/${id}`)
+  },
+  save(payload) {
+    return post('/api/admin/partner/tenant/save', payload)
+  },
+  enable(id) {
+    return post(`/api/admin/partner/tenant/enable/${id}`)
+  },
+  disable(id) {
+    return post(`/api/admin/partner/tenant/disable/${id}`)
+  },
+  users(id) {
+    return request(`/api/admin/partner/tenant/${id}/users`)
+  },
+  assignUser(id, payload) {
+    return post(`/api/admin/partner/tenant/${id}/users/assign`, payload)
+  },
+  enableUser(id, userId) {
+    return post(`/api/admin/partner/tenant/${id}/users/${userId}/enable`)
+  },
+  disableUser(id, userId) {
+    return post(`/api/admin/partner/tenant/${id}/users/${userId}/disable`)
+  },
+  resetUserPassword(id, userId, payload) {
+    return post(`/api/admin/partner/tenant/${id}/users/${userId}/reset-password`, payload)
   }
 }
 
