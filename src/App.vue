@@ -50,6 +50,10 @@
             <el-icon><Document /></el-icon>
             <span>资料中心</span>
           </el-menu-item>
+          <el-menu-item index="salaryCenter">
+            <el-icon><Money /></el-icon>
+            <span>工资中心</span>
+          </el-menu-item>
           <el-sub-menu index="system">
             <template #title>
               <el-icon><Setting /></el-icon>
@@ -146,7 +150,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import { ArrowDown, Box, Collection, Document, Goods, House, Setting, User } from '@element-plus/icons-vue'
+import { ArrowDown, Box, Collection, Document, Goods, House, Money, Setting, User } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { authApi, clearAuthSession, getAuthSession, getTenantId, setTenantId } from './api/wms'
 import LoginPage from './pages/LoginPage.vue'
@@ -163,6 +167,7 @@ import UnitPage from './pages/UnitPage.vue'
 import OperationLogPage from './pages/OperationLogPage.vue'
 import MaterialPage from './pages/MaterialPage.vue'
 import PartnerPage from './pages/PartnerPage.vue'
+import SalaryCenterPage from './pages/SalaryCenterPage.vue'
 
 const menuMeta = {
   dashboard: { group: '概览', title: '工作台' },
@@ -176,6 +181,7 @@ const menuMeta = {
   inventoryLog: { group: '仓储管理', title: '库存日志' },
   unit: { group: '基础资料', title: '计量单位' },
   material: { group: '基础资料', title: '资料中心' },
+  salaryCenter: { group: '基础资料', title: '工资中心' },
   partner: { group: '系统管理', title: '合作方管理' },
   operationLog: { group: '系统管理', title: '操作记录' }
 }
@@ -192,6 +198,7 @@ const pageComponents = {
   inventoryLog: InventoryLogPage,
   unit: UnitPage,
   material: MaterialPage,
+  salaryCenter: SalaryCenterPage,
   partner: PartnerPage,
   operationLog: OperationLogPage
 }

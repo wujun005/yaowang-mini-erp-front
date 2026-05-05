@@ -333,6 +333,26 @@ export const materialApi = {
   }
 }
 
+export const salaryCenterApi = {
+  page(params) {
+    return post('/api/admin/salary-center/page', params)
+  },
+  detail(id) {
+    return request(`/api/admin/salary-center/${id}`)
+  },
+  save(payload) {
+    return post('/api/admin/salary-center/save', payload)
+  },
+  invalidate(id) {
+    return post('/api/admin/salary-center/invalidate', { id })
+  },
+  upload(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return requestForm('/api/open/openclaw/media/upload?bizType=salary', formData)
+  }
+}
+
 export const partnerApi = {
   page(params) {
     return post('/api/admin/partner/tenant/page', params)
