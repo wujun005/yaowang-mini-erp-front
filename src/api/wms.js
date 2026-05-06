@@ -353,6 +353,42 @@ export const salaryCenterApi = {
   }
 }
 
+export const laborShiftWorkApi = {
+  page(params) {
+    return post('/api/admin/labor/shift-work/page', params)
+  },
+  detail(id) {
+    return request(`/api/admin/labor/shift-work/${id}`)
+  },
+  save(payload) {
+    return post('/api/admin/labor/shift-work/save', payload)
+  },
+  invalidate(id) {
+    return post('/api/admin/labor/shift-work/invalidate', { id })
+  }
+}
+
+export const laborShiftFeeResultApi = {
+  page(params) {
+    return post('/api/admin/labor/shift-fee-result/page', params)
+  },
+  detail(id) {
+    return request(`/api/admin/labor/shift-fee-result/${id}`)
+  },
+  save(payload) {
+    return post('/api/admin/labor/shift-fee-result/save', payload)
+  },
+  invalidate(id) {
+    return post('/api/admin/labor/shift-fee-result/invalidate', { id })
+  },
+  settleDay(workDate) {
+    return post('/api/admin/labor/shift-fee-result/settle/day', { workDate })
+  },
+  settleMonth(month) {
+    return post('/api/admin/labor/shift-fee-result/settle/month', { month })
+  }
+}
+
 export const partnerApi = {
   page(params) {
     return post('/api/admin/partner/tenant/page', params)

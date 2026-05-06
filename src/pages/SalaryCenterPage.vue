@@ -1,23 +1,23 @@
 <template>
   <section class="toolbar">
     <div class="toolbar-title-row">
-      <h2>工资中心列表</h2>
-      <el-button type="primary" :icon="Plus" @click="openCreate">新增工资</el-button>
+      <h2>价格中心列表</h2>
+      <el-button type="primary" :icon="Plus" @click="openCreate">新增价格</el-button>
     </div>
     <el-form :model="filters" class="filter-form compact-filter-form" label-position="top" @submit.prevent>
-      <el-form-item label="对象名称">
+      <el-form-item label="名称">
         <el-input
           v-model.trim="filters.objectNameKeyword"
           clearable
-          placeholder="输入对象名称"
+          placeholder="输入名称"
           @keyup.enter="handleSearch"
         />
       </el-form-item>
-      <el-form-item label="对象编号">
+      <el-form-item label="编号">
         <el-input
           v-model.trim="filters.objectNoKeyword"
           clearable
-          placeholder="输入对象编号"
+          placeholder="输入编号"
           @keyup.enter="handleSearch"
         />
       </el-form-item>
@@ -42,16 +42,16 @@
       border
       stripe
       height="calc(100vh - 292px)"
-      empty-text="暂无工资数据"
+      empty-text="暂无价格数据"
     >
-      <el-table-column prop="objectNo" label="对象编号" min-width="140" show-overflow-tooltip />
-      <el-table-column prop="objectName" label="对象名称" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="objectDesc" label="对象描述" min-width="180" show-overflow-tooltip />
-      <el-table-column label="Excel文件" min-width="200">
+      <el-table-column prop="objectNo" label="编号" min-width="140" show-overflow-tooltip />
+      <el-table-column prop="objectName" label="名称" min-width="180" show-overflow-tooltip />
+      <el-table-column prop="objectDesc" label="描述" min-width="180" show-overflow-tooltip />
+      <el-table-column label="价格文件" min-width="200">
         <template #default="{ row }">
           <div v-if="getExcelFile(row.resources)" class="excel-file">
             <el-icon class="excel-icon"><Document /></el-icon>
-            <span class="excel-name">{{ getExcelFile(row.resources)?.name || '工资表.xlsx' }}</span>
+            <span class="excel-name">{{ getExcelFile(row.resources)?.name || '价格文件.xlsx' }}</span>
             <el-button
               type="primary"
               link
@@ -65,10 +65,10 @@
           <span v-else class="no-file">-</span>
         </template>
       </el-table-column>
-      <el-table-column label="有效期" min-width="220">
+      <el-table-column label="有效时间" min-width="220">
         <template #default="{ row }">
           <div v-if="row.validStartTime || row.validEndTime">
-            {{ formatDate(row.validStartTime) }} ~ {{ formatDate(row.validEndTime) }}
+            {{ formatValidTime(row.validStartTime, row.validEndTime) }}
           </div>
           <span v-else>-</span>
         </template>
@@ -113,18 +113,18 @@
     </div>
   </section>
 
-  <el-dialog v-model="editDialog.visible" :title="editDialog.isEdit ? '编辑工资' : '新增工资'" width="720px">
+  <el-dialog v-model="editDialog.visible" :title="editDialog.isEdit ? '编辑价格' : '新增价格'" width="720px">
     <el-form class="dialog-form salary-dialog-form" :model="editDialog.form" label-position="top">
-      <el-form-item label="对象编号" v-if="editDialog.isEdit">
+      <el-form-item label="编号" v-if="editDialog.isEdit">
         <el-input v-model.trim="editDialog.form.objectNo" disabled />
       </el-form-item>
-      <el-form-item label="对象名称" required>
-        <el-input v-model.trim="editDialog.form.objectName" placeholder="请输入对象名称" />
+      <el-form-item label="名称" required>
+        <el-input v-model.trim="editDialog.form.objectName" placeholder="请输入名称" />
       </el-form-item>
-      <el-form-item label="对象描述">
-        <el-input v-model.trim="editDialog.form.objectDesc" placeholder="请输入对象描述" />
+      <el-form-item label="描述">
+        <el-input v-model.trim="editDialog.form.objectDesc" placeholder="请输入描述" />
       </el-form-item>
-      <el-form-item label="有效期">
+      <el-form-item label="有效时间">
         <el-date-picker
           v-model="editDialog.form.validRange"
           type="daterange"
@@ -141,7 +141,7 @@
           <el-option label="失效" :value="0" />
         </el-select>
       </el-form-item>
-      <el-form-item class="full-line" label="Excel工资表">
+      <el-form-item class="full-line" label="价格文件">
         <div class="upload-section">
           <el-upload
             class="upload-area"
@@ -159,21 +159,18 @@
               :loading="uploading"
               :disabled="editDialog.form.resources.length > 0"
             >
-              {{ editDialog.form.resources.length > 0 ? '已上传' : '选择Excel上传' }}
+              {{ editDialog.form.resources.length > 0 ? '已上传' : '选择文件上传' }}
             </el-button>
           </el-upload>
           <div class="upload-hint">仅支持上传一个Excel文件(.xlsx, .xls)</div>
           <div v-if="editDialog.form.resources.length > 0" class="uploaded-file">
             <div class="file-item">
               <el-icon class="file-icon"><Document /></el-icon>
-              <span class="file-name">{{ editDialog.form.resources[0].name || '工资表.xlsx' }}</span>
+              <span class="file-name">{{ editDialog.form.resources[0].name || '价格文件.xlsx' }}</span>
               <el-button type="danger" size="small" circle :icon="Delete" @click="removeFile" />
             </div>
           </div>
         </div>
-      </el-form-item>
-      <el-form-item class="full-line" label="扩展字段">
-        <el-input v-model.trim="editDialog.form.ext" type="textarea" :rows="3" placeholder="请输入扩展字段" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -227,7 +224,7 @@ async function fetchList() {
   } catch (error) {
     rows.value = []
     total.value = 0
-    ElMessage.error(error.message || '工资数据加载失败')
+    ElMessage.error(error.message || '价格数据加载失败')
   } finally {
     loading.value = false
   }
@@ -248,7 +245,11 @@ function handleReset() {
 
 function formatDate(date) {
   if (!date) return '-'
-  return date.split(' ')[0]
+  return String(date).split(/[T ]/)[0]
+}
+
+function formatValidTime(startTime, endTime) {
+  return `${formatDate(startTime)}~${formatDate(endTime)}`
 }
 
 function getExcelFile(resources) {
@@ -264,8 +265,7 @@ function createEmptyForm() {
     objectDesc: '',
     status: 1,
     validRange: [],
-    resources: [],
-    ext: ''
+    resources: []
   }
 }
 
@@ -286,10 +286,9 @@ async function openEdit(row) {
       objectDesc: detail?.objectDesc || '',
       status: Number(detail?.status ?? 1),
       validRange: detail?.validStartTime && detail?.validEndTime
-        ? [detail.validStartTime.split(' ')[0], detail.validEndTime.split(' ')[0]]
+        ? [formatDate(detail.validStartTime), formatDate(detail.validEndTime)]
         : [],
-      resources: detail?.resources || [],
-      ext: detail?.ext || ''
+      resources: detail?.resources || []
     }
   } catch (error) {
     editDialog.form = {
@@ -299,10 +298,9 @@ async function openEdit(row) {
       objectDesc: row.objectDesc || '',
       status: Number(row.status ?? 1),
       validRange: row.validStartTime && row.validEndTime
-        ? [row.validStartTime.split(' ')[0], row.validEndTime.split(' ')[0]]
+        ? [formatDate(row.validStartTime), formatDate(row.validEndTime)]
         : [],
-      resources: row.resources || [],
-      ext: row.ext || ''
+      resources: row.resources || []
     }
   }
   editDialog.visible = true
@@ -348,7 +346,7 @@ function removeFile() {
 
 async function submitForm() {
   if (!editDialog.form.objectName) {
-    ElMessage.warning('请填写对象名称')
+    ElMessage.warning('请填写名称')
     return
   }
 
@@ -390,13 +388,33 @@ async function invalidate(row) {
   }
 }
 
-async function previewExcel(row) {
+function previewExcel(row) {
   const file = getExcelFile(row.resources)
   if (!file || !file.fileUrl) {
     ElMessage.warning('没有可预览的文件')
     return
   }
-  window.open(file.fileUrl, '_blank')
+
+  const fileUrl = normalizeFileUrl(file.fileUrl)
+  const previewUrl = isHttpUrl(fileUrl)
+    ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`
+    : fileUrl
+  const opened = window.open(previewUrl, '_blank', 'noopener,noreferrer')
+
+  if (!opened) {
+    ElMessage.warning('浏览器拦截了新窗口，请允许弹出窗口后重试')
+  }
+}
+
+function normalizeFileUrl(fileUrl) {
+  if (fileUrl.startsWith('//')) {
+    return `${window.location.protocol}${fileUrl}`
+  }
+  return fileUrl
+}
+
+function isHttpUrl(fileUrl) {
+  return /^https?:\/\//i.test(fileUrl)
 }
 </script>
 

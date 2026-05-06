@@ -14,7 +14,7 @@
 
         <el-menu
           :default-active="activeMenu"
-          :default-openeds="['product', 'wms', 'system']"
+          :default-openeds="['product', 'wms', 'labor', 'system']"
           class="side-menu"
           @select="handleMenuSelect"
         >
@@ -52,8 +52,16 @@
           </el-menu-item>
           <el-menu-item index="salaryCenter">
             <el-icon><Money /></el-icon>
-            <span>工资中心</span>
+            <span>价格中心</span>
           </el-menu-item>
+          <el-sub-menu index="labor">
+            <template #title>
+              <el-icon><User /></el-icon>
+              <span>劳务管理</span>
+            </template>
+            <el-menu-item index="laborShiftWork">班次作业流水</el-menu-item>
+            <el-menu-item index="laborShiftFeeResult">班次计费结果</el-menu-item>
+          </el-sub-menu>
           <el-sub-menu index="system">
             <template #title>
               <el-icon><Setting /></el-icon>
@@ -168,6 +176,8 @@ import OperationLogPage from './pages/OperationLogPage.vue'
 import MaterialPage from './pages/MaterialPage.vue'
 import PartnerPage from './pages/PartnerPage.vue'
 import SalaryCenterPage from './pages/SalaryCenterPage.vue'
+import LaborShiftWorkPage from './pages/LaborShiftWorkPage.vue'
+import LaborShiftFeeResultPage from './pages/LaborShiftFeeResultPage.vue'
 
 const menuMeta = {
   dashboard: { group: '概览', title: '工作台' },
@@ -181,7 +191,9 @@ const menuMeta = {
   inventoryLog: { group: '仓储管理', title: '库存日志' },
   unit: { group: '基础资料', title: '计量单位' },
   material: { group: '基础资料', title: '资料中心' },
-  salaryCenter: { group: '基础资料', title: '工资中心' },
+  salaryCenter: { group: '基础资料', title: '价格中心' },
+  laborShiftWork: { group: '劳务管理', title: '劳务班次作业流水' },
+  laborShiftFeeResult: { group: '劳务管理', title: '劳务班次计费结果' },
   partner: { group: '系统管理', title: '合作方管理' },
   operationLog: { group: '系统管理', title: '操作记录' }
 }
@@ -199,6 +211,8 @@ const pageComponents = {
   unit: UnitPage,
   material: MaterialPage,
   salaryCenter: SalaryCenterPage,
+  laborShiftWork: LaborShiftWorkPage,
+  laborShiftFeeResult: LaborShiftFeeResultPage,
   partner: PartnerPage,
   operationLog: OperationLogPage
 }
