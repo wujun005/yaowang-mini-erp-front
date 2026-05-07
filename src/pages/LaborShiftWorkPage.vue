@@ -1,12 +1,12 @@
 <template>
   <section class="toolbar">
     <div class="toolbar-title-row">
-      <h2>劳务班次作业流水</h2>
-      <el-button type="primary" :icon="Plus" @click="openCreate">新增流水</el-button>
+      <h2>工作量记录</h2>
+      <el-button type="primary" :icon="Plus" @click="openCreate">记录工作量</el-button>
     </div>
     <el-form :model="filters" class="filter-form" label-position="top" @submit.prevent>
-      <el-form-item label="工人 ID">
-        <el-input v-model.trim="filters.workerId" clearable placeholder="输入工人 ID" @keyup.enter="handleSearch" />
+      <el-form-item label="工人编号">
+        <el-input v-model.trim="filters.workerId" clearable placeholder="输入工人编号" @keyup.enter="handleSearch" />
       </el-form-item>
       <el-form-item label="工人名称">
         <el-input
@@ -16,10 +16,12 @@
           @keyup.enter="handleSearch"
         />
       </el-form-item>
-      <el-form-item label="班次编码">
-        <el-input v-model.trim="filters.shiftCode" clearable placeholder="输入班次编码" @keyup.enter="handleSearch" />
+      <el-form-item label="班次">
+        <el-select v-model="filters.shiftCode" clearable placeholder="全部班次">
+          <el-option v-for="item in shiftOptions" :key="item.code" :label="item.name" :value="item.code" />
+        </el-select>
       </el-form-item>
-      <el-form-item label="作业日期">
+      <el-form-item label="上班日期">
         <el-date-picker
           v-model="filters.workDateRange"
           type="daterange"
@@ -51,23 +53,25 @@
       border
       stripe
       height="calc(100vh - 334px)"
-      empty-text="暂无班次作业流水"
+      empty-text="暂无工作量记录"
     >
-      <el-table-column prop="workerId" label="工人 ID" min-width="120" fixed show-overflow-tooltip />
+      <el-table-column prop="workerId" label="工人编号" min-width="120" fixed show-overflow-tooltip />
       <el-table-column prop="workerName" label="工人名称" min-width="140" show-overflow-tooltip />
-      <el-table-column label="作业日期" min-width="130">
+      <el-table-column label="上班日期" min-width="130">
         <template #default="{ row }">{{ formatDate(row.workDate) }}</template>
       </el-table-column>
-      <el-table-column prop="shiftCode" label="班次编码" min-width="130" show-overflow-tooltip />
-      <el-table-column prop="shiftName" label="班次名称" min-width="140" show-overflow-tooltip />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
           <el-tag :type="statusTagType(row.status)" effect="light">{{ statusText(row.status) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="createTime" label="创建时间" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="modifyTime" label="修改时间" min-width="180" show-overflow-tooltip />
+      <el-table-column label="创建时间" min-width="180" show-overflow-tooltip>
+        <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+      </el-table-column>
+      <el-table-column label="修改时间" min-width="180" show-overflow-tooltip>
+        <template #default="{ row }">{{ formatDateTime(row.modifyTime) }}</template>
+      </el-table-column>
       <el-table-column label="操作" fixed="right" width="152" align="center">
         <template #default="{ row }">
           <div class="row-actions">
@@ -101,28 +105,27 @@
     </div>
   </section>
 
-  <el-dialog v-model="editDialog.visible" :title="editDialog.isEdit ? '编辑作业流水' : '新增作业流水'" width="1080px">
+  <el-dialog v-model="editDialog.visible" :title="editDialog.isEdit ? '编辑工作量' : '记录工作量'" width="1080px">
     <el-form class="dialog-form labor-dialog-form" :model="editDialog.form" label-position="top">
-      <el-form-item label="工人 ID" required>
-        <el-input v-model.trim="editDialog.form.workerId" placeholder="请输入工人 ID" />
+      <el-form-item label="工人编号" required>
+        <el-input v-model.trim="editDialog.form.workerId" placeholder="请输入工人编号" />
       </el-form-item>
       <el-form-item label="工人名称">
         <el-input v-model.trim="editDialog.form.workerName" placeholder="请输入工人名称" />
       </el-form-item>
-      <el-form-item label="作业日期" required>
+      <el-form-item label="上班日期" required>
         <el-date-picker
           v-model="editDialog.form.workDate"
           type="date"
           value-format="YYYY-MM-DD"
-          placeholder="请选择作业日期"
+          placeholder="请选择上班日期"
           style="width: 100%"
         />
       </el-form-item>
-      <el-form-item label="班次编码" required>
-        <el-input v-model.trim="editDialog.form.shiftCode" placeholder="请输入班次编码" />
-      </el-form-item>
-      <el-form-item label="班次名称">
-        <el-input v-model.trim="editDialog.form.shiftName" placeholder="请输入班次名称" />
+      <el-form-item label="班次" required>
+        <el-select v-model="editDialog.form.shiftCode" placeholder="请选择班次" @change="handleShiftChange">
+          <el-option v-for="item in shiftOptions" :key="item.code" :label="item.name" :value="item.code" />
+        </el-select>
       </el-form-item>
       <el-form-item label="状态" required>
         <el-select v-model="editDialog.form.status" placeholder="请选择状态">
@@ -133,10 +136,7 @@
       <el-form-item class="full-line" label="备注">
         <el-input v-model.trim="editDialog.form.remark" type="textarea" :rows="2" placeholder="请输入备注" />
       </el-form-item>
-      <el-form-item class="full-line" label="扩展信息">
-        <el-input v-model.trim="editDialog.form.extInfo" type="textarea" :rows="2" placeholder="请输入扩展信息 JSON" />
-      </el-form-item>
-      <el-form-item class="full-line" label="作业明细">
+      <el-form-item class="full-line" label="工作量明细">
         <div class="labor-lines">
           <div class="line-toolbar">
             <el-button type="primary" :icon="Plus" @click="addItem">新增明细</el-button>
@@ -162,7 +162,7 @@
                 <el-input v-model.trim="row.processName" placeholder="工序名称" />
               </template>
             </el-table-column>
-            <el-table-column label="作业数量" min-width="128">
+            <el-table-column label="工作量" min-width="128">
               <template #default="{ row }">
                 <el-input-number v-model="row.workQty" :min="0" :precision="2" controls-position="right" />
               </template>
@@ -220,6 +220,10 @@ const filters = reactive({
   workDateRange: [],
   status: undefined
 })
+const shiftOptions = [
+  { code: 'DAY', name: '白班' },
+  { code: 'NIGHT', name: '夜班' }
+]
 const page = reactive({
   pageNum: 1,
   pageSize: 20
@@ -253,7 +257,7 @@ async function fetchList() {
   } catch (error) {
     rows.value = []
     total.value = 0
-    ElMessage.error(error.message || '作业流水加载失败')
+    ElMessage.error(error.message || '工作量记录加载失败')
   } finally {
     loading.value = false
   }
@@ -280,11 +284,10 @@ function createEmptyForm() {
     workerId: '',
     workerName: '',
     workDate: '',
-    shiftCode: '',
-    shiftName: '',
+    shiftCode: 'DAY',
+    shiftName: '白班',
     status: 1,
     remark: '',
-    extInfo: '',
     items: []
   }
 }
@@ -300,8 +303,7 @@ function createEmptyItem() {
     unit: '件',
     qualifiedQty: 0,
     defectQty: 0,
-    remark: '',
-    extInfo: ''
+    remark: ''
   }
 }
 
@@ -317,6 +319,8 @@ async function openEdit(row) {
     ...createEmptyForm(),
     ...row,
     workDate: formatDate(row.workDate),
+    shiftCode: row.shiftCode || 'DAY',
+    shiftName: getShiftName(row.shiftCode, row.shiftName),
     status: Number(row.status ?? 1),
     items: []
   }
@@ -328,6 +332,8 @@ async function openEdit(row) {
       ...createEmptyForm(),
       ...detail,
       workDate: formatDate(detail?.workDate),
+      shiftCode: detail?.shiftCode || 'DAY',
+      shiftName: getShiftName(detail?.shiftCode, detail?.shiftName),
       status: Number(detail?.status ?? 1),
       items: normalizeItems(detail?.items)
     }
@@ -347,8 +353,7 @@ function normalizeItems(items = []) {
     unit: item.unit || '件',
     qualifiedQty: Number(item.qualifiedQty || 0),
     defectQty: Number(item.defectQty || 0),
-    remark: item.remark || '',
-    extInfo: item.extInfo || ''
+    remark: item.remark || ''
   }))
 }
 
@@ -360,14 +365,18 @@ function removeItem(index) {
   editDialog.form.items.splice(index, 1)
 }
 
+function handleShiftChange(value) {
+  editDialog.form.shiftName = getShiftName(value)
+}
+
 async function submitForm() {
   const form = editDialog.form
   if (!form.workerId || !form.workDate || !form.shiftCode) {
-    ElMessage.warning('请填写工人 ID、作业日期和班次编码')
+    ElMessage.warning('请填写工人编号、上班日期和班次')
     return
   }
   if (form.items.some((item) => Number(item.workQty) <= 0)) {
-    ElMessage.warning('作业明细的作业数量必须大于 0')
+    ElMessage.warning('工作量明细的工作量必须大于 0')
     return
   }
 
@@ -382,7 +391,6 @@ async function submitForm() {
       shiftName: form.shiftName,
       status: form.status,
       remark: form.remark,
-      extInfo: form.extInfo,
       items: form.items.map((item) => ({
         productCode: item.productCode,
         productName: item.productName,
@@ -392,8 +400,7 @@ async function submitForm() {
         unit: item.unit,
         qualifiedQty: item.qualifiedQty,
         defectQty: item.defectQty,
-        remark: item.remark,
-        extInfo: item.extInfo
+        remark: item.remark
       }))
     })
     ElMessage.success('保存成功')
@@ -408,7 +415,7 @@ async function submitForm() {
 
 async function invalidate(row) {
   try {
-    await ElMessageBox.confirm(`确认将「${row.workerName || row.workerId}」的班次作业流水设为失效吗？`, '失效确认', {
+    await ElMessageBox.confirm(`确认将「${row.workerName || row.workerId}」的工作量记录设为失效吗？`, '失效确认', {
       type: 'warning',
       confirmButtonText: '确认失效',
       cancelButtonText: '取消',
@@ -429,8 +436,19 @@ function formatDate(date) {
   return String(date).split(/[T ]/)[0]
 }
 
+function formatDateTime(date) {
+  if (!date) return '-'
+  const normalized = String(date).replace('T', ' ').replace(/\.\d+.*$/, '').replace(/\+\d{2}:\d{2}$/, '')
+  const [datePart, timePart = '00:00:00'] = normalized.split(' ')
+  return `${datePart} ${timePart.slice(0, 8)}`
+}
+
 function statusText(status) {
   return Number(status) === 1 ? '有效' : '失效'
+}
+
+function getShiftName(code, fallback = '') {
+  return shiftOptions.find((item) => item.code === code)?.name || fallback || '白班'
 }
 </script>
 

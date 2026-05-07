@@ -1,30 +1,46 @@
 <template>
   <section class="toolbar">
     <div class="toolbar-title-row">
-      <h2>劳务班次计费结果</h2>
+      <h2>工资计算结果</h2>
       <div class="toolbar-actions">
         <el-date-picker
           v-model="settleForm.day"
           class="settle-picker"
           type="date"
           value-format="YYYY-MM-DD"
-          placeholder="结算日期"
+          placeholder="重算日期"
         />
-        <el-button :icon="Calendar" :loading="settleForm.dayLoading" @click="settleByDay">按日结算</el-button>
+        <el-button
+          class="recalc-button"
+          type="warning"
+          :icon="RefreshRight"
+          :loading="settleForm.dayLoading"
+          @click="settleByDay"
+        >
+          按日重算
+        </el-button>
         <el-date-picker
           v-model="settleForm.month"
           class="settle-picker"
           type="month"
           value-format="YYYY-MM"
-          placeholder="结算月份"
+          placeholder="重算月份"
         />
-        <el-button :icon="Calendar" :loading="settleForm.monthLoading" @click="settleByMonth">按月结算</el-button>
+        <el-button
+          class="recalc-button"
+          type="warning"
+          :icon="RefreshRight"
+          :loading="settleForm.monthLoading"
+          @click="settleByMonth"
+        >
+          按月重算
+        </el-button>
         <el-button type="primary" :icon="Plus" @click="openCreate">新增结果</el-button>
       </div>
     </div>
     <el-form :model="filters" class="filter-form" label-position="top" @submit.prevent>
-      <el-form-item label="工人 ID">
-        <el-input v-model.trim="filters.workerId" clearable placeholder="输入工人 ID" @keyup.enter="handleSearch" />
+      <el-form-item label="工人编号">
+        <el-input v-model.trim="filters.workerId" clearable placeholder="输入工人编号" @keyup.enter="handleSearch" />
       </el-form-item>
       <el-form-item label="工人名称">
         <el-input
@@ -34,10 +50,12 @@
           @keyup.enter="handleSearch"
         />
       </el-form-item>
-      <el-form-item label="班次编码">
-        <el-input v-model.trim="filters.shiftCode" clearable placeholder="输入班次编码" @keyup.enter="handleSearch" />
+      <el-form-item label="班次">
+        <el-select v-model="filters.shiftCode" clearable placeholder="全部班次">
+          <el-option v-for="item in shiftOptions" :key="item.code" :label="item.name" :value="item.code" />
+        </el-select>
       </el-form-item>
-      <el-form-item label="作业日期">
+      <el-form-item label="上班日期">
         <el-date-picker
           v-model="filters.workDateRange"
           type="daterange"
@@ -69,16 +87,14 @@
       border
       stripe
       height="calc(100vh - 334px)"
-      empty-text="暂无班次计费结果"
+      empty-text="暂无工资计算结果"
     >
       <el-table-column prop="shiftWorkLogId" label="流水 ID" min-width="110" fixed show-overflow-tooltip />
-      <el-table-column prop="workerId" label="工人 ID" min-width="120" show-overflow-tooltip />
+      <el-table-column prop="workerId" label="工人编号" min-width="120" show-overflow-tooltip />
       <el-table-column prop="workerName" label="工人名称" min-width="140" show-overflow-tooltip />
-      <el-table-column label="作业日期" min-width="130">
+      <el-table-column label="上班日期" min-width="130">
         <template #default="{ row }">{{ formatDate(row.workDate) }}</template>
       </el-table-column>
-      <el-table-column prop="shiftCode" label="班次编码" min-width="130" show-overflow-tooltip />
-      <el-table-column prop="shiftName" label="班次名称" min-width="140" show-overflow-tooltip />
       <el-table-column prop="totalQty" label="总数量" min-width="120" align="right" />
       <el-table-column prop="totalAmount" label="总金额" min-width="120" align="right" />
       <el-table-column label="价格文件" min-width="120" align="center">
@@ -135,31 +151,30 @@
     </div>
   </section>
 
-  <el-dialog v-model="editDialog.visible" :title="editDialog.isEdit ? '编辑计费结果' : '新增计费结果'" width="1080px">
+  <el-dialog v-model="editDialog.visible" :title="editDialog.isEdit ? '编辑工资计算结果' : '新增工资计算结果'" width="1080px">
     <el-form class="dialog-form labor-dialog-form" :model="editDialog.form" label-position="top">
       <el-form-item label="流水 ID">
         <el-input-number v-model="editDialog.form.shiftWorkLogId" :min="0" :precision="0" controls-position="right" />
       </el-form-item>
-      <el-form-item label="工人 ID" required>
-        <el-input v-model.trim="editDialog.form.workerId" placeholder="请输入工人 ID" />
+      <el-form-item label="工人编号" required>
+        <el-input v-model.trim="editDialog.form.workerId" placeholder="请输入工人编号" />
       </el-form-item>
       <el-form-item label="工人名称">
         <el-input v-model.trim="editDialog.form.workerName" placeholder="请输入工人名称" />
       </el-form-item>
-      <el-form-item label="作业日期" required>
+      <el-form-item label="上班日期" required>
         <el-date-picker
           v-model="editDialog.form.workDate"
           type="date"
           value-format="YYYY-MM-DD"
-          placeholder="请选择作业日期"
+          placeholder="请选择上班日期"
           style="width: 100%"
         />
       </el-form-item>
-      <el-form-item label="班次编码" required>
-        <el-input v-model.trim="editDialog.form.shiftCode" placeholder="请输入班次编码" />
-      </el-form-item>
-      <el-form-item label="班次名称">
-        <el-input v-model.trim="editDialog.form.shiftName" placeholder="请输入班次名称" />
+      <el-form-item label="班次" required>
+        <el-select v-model="editDialog.form.shiftCode" placeholder="请选择班次" @change="handleShiftChange">
+          <el-option v-for="item in shiftOptions" :key="item.code" :label="item.name" :value="item.code" />
+        </el-select>
       </el-form-item>
       <el-form-item label="总数量" required>
         <el-input-number v-model="editDialog.form.totalQty" :min="0" :precision="2" controls-position="right" />
@@ -243,7 +258,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { Calendar, CircleClose, Delete, Edit, Plus, Refresh, Search, View } from '@element-plus/icons-vue'
+import { CircleClose, Delete, Edit, Plus, Refresh, RefreshRight, Search, View } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { laborShiftFeeResultApi } from '../api/wms'
 import { statusTagType } from '../utils/display'
@@ -258,6 +273,10 @@ const filters = reactive({
   workDateRange: [],
   status: undefined
 })
+const shiftOptions = [
+  { code: 'DAY', name: '白班' },
+  { code: 'NIGHT', name: '晚班' }
+]
 const page = reactive({
   pageNum: 1,
   pageSize: 20
@@ -325,8 +344,8 @@ function createEmptyForm() {
     workerId: '',
     workerName: '',
     workDate: '',
-    shiftCode: '',
-    shiftName: '',
+    shiftCode: 'DAY',
+    shiftName: '白班',
     totalQty: 0,
     totalAmount: 0,
     pricingTemplateUrl: '',
@@ -362,6 +381,8 @@ async function openEdit(row) {
     ...createEmptyForm(),
     ...row,
     workDate: formatDate(row.workDate),
+    shiftCode: row.shiftCode || 'DAY',
+    shiftName: getShiftName(row.shiftCode || 'DAY', row.shiftName),
     status: Number(row.status ?? 1),
     items: []
   }
@@ -373,6 +394,8 @@ async function openEdit(row) {
       ...createEmptyForm(),
       ...detail,
       workDate: formatDate(detail?.workDate),
+      shiftCode: detail?.shiftCode || 'DAY',
+      shiftName: getShiftName(detail?.shiftCode || 'DAY', detail?.shiftName),
       status: Number(detail?.status ?? 1),
       items: normalizeItems(detail?.items)
     }
@@ -403,10 +426,14 @@ function removeItem(index) {
   editDialog.form.items.splice(index, 1)
 }
 
+function handleShiftChange(value) {
+  editDialog.form.shiftName = getShiftName(value)
+}
+
 async function submitForm() {
   const form = editDialog.form
   if (!form.workerId || !form.workDate || !form.shiftCode) {
-    ElMessage.warning('请填写工人 ID、作业日期和班次编码')
+    ElMessage.warning('请填写工人编号、上班日期和班次')
     return
   }
   if (Number(form.totalQty) < 0 || Number(form.totalAmount) < 0) {
@@ -456,7 +483,7 @@ async function submitForm() {
 
 async function invalidate(row) {
   try {
-    await ElMessageBox.confirm(`确认将「${row.workerName || row.workerId}」的班次计费结果设为失效吗？`, '失效确认', {
+    await ElMessageBox.confirm(`确认将「${row.workerName || row.workerId}」的工资计算结果设为失效吗？`, '失效确认', {
       type: 'warning',
       confirmButtonText: '确认失效',
       cancelButtonText: '取消',
@@ -474,7 +501,7 @@ async function invalidate(row) {
 
 async function settleByDay() {
   if (!settleForm.day) {
-    ElMessage.warning('请选择结算日期')
+    ElMessage.warning('请选择重算日期')
     return
   }
 
@@ -484,7 +511,7 @@ async function settleByDay() {
     handleSettleResult(result)
     fetchList()
   } catch (error) {
-    ElMessage.error(error.message || '按日结算失败')
+    ElMessage.error(error.message || '按日重算失败')
   } finally {
     settleForm.dayLoading = false
   }
@@ -492,7 +519,7 @@ async function settleByDay() {
 
 async function settleByMonth() {
   if (!settleForm.month) {
-    ElMessage.warning('请选择结算月份')
+    ElMessage.warning('请选择重算月份')
     return
   }
 
@@ -502,7 +529,7 @@ async function settleByMonth() {
     handleSettleResult(result)
     fetchList()
   } catch (error) {
-    ElMessage.error(error.message || '按月结算失败')
+    ElMessage.error(error.message || '按月重算失败')
   } finally {
     settleForm.monthLoading = false
   }
@@ -511,10 +538,10 @@ async function settleByMonth() {
 function handleSettleResult(result) {
   if (result && isHttpUrl(result)) {
     openFile(result)
-    ElMessage.success('结算完成，已打开导出结果')
+    ElMessage.success('重算完成，已打开导出结果')
     return
   }
-  ElMessage.success(result || '结算完成')
+  ElMessage.success(result || '重算完成')
 }
 
 function openFile(fileUrl) {
@@ -548,11 +575,19 @@ function formatDate(date) {
 function statusText(status) {
   return Number(status) === 1 ? '有效' : '失效'
 }
+
+function getShiftName(code, fallback = '') {
+  return shiftOptions.find((item) => item.code === code)?.name || fallback || '白班'
+}
 </script>
 
 <style scoped>
 .settle-picker {
   width: 150px;
+}
+
+.recalc-button {
+  font-weight: 700;
 }
 
 .labor-dialog-form {

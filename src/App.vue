@@ -14,7 +14,7 @@
 
         <el-menu
           :default-active="activeMenu"
-          :default-openeds="['product', 'wms', 'labor', 'system']"
+          :default-openeds="['product', 'wms', 'salary', 'system']"
           class="side-menu"
           @select="handleMenuSelect"
         >
@@ -50,17 +50,14 @@
             <el-icon><Document /></el-icon>
             <span>资料中心</span>
           </el-menu-item>
-          <el-menu-item index="salaryCenter">
-            <el-icon><Money /></el-icon>
-            <span>价格中心</span>
-          </el-menu-item>
-          <el-sub-menu index="labor">
+          <el-sub-menu index="salary">
             <template #title>
-              <el-icon><User /></el-icon>
-              <span>劳务管理</span>
+              <el-icon><Money /></el-icon>
+              <span>薪资计算</span>
             </template>
-            <el-menu-item index="laborShiftWork">班次作业流水</el-menu-item>
-            <el-menu-item index="laborShiftFeeResult">班次计费结果</el-menu-item>
+            <el-menu-item index="salaryCenter">价格中心</el-menu-item>
+            <el-menu-item index="laborShiftWork">工作量记录</el-menu-item>
+            <el-menu-item index="laborShiftFeeResult">工资计算结果</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="system">
             <template #title>
@@ -191,9 +188,9 @@ const menuMeta = {
   inventoryLog: { group: '仓储管理', title: '库存日志' },
   unit: { group: '基础资料', title: '计量单位' },
   material: { group: '基础资料', title: '资料中心' },
-  salaryCenter: { group: '基础资料', title: '价格中心' },
-  laborShiftWork: { group: '劳务管理', title: '劳务班次作业流水' },
-  laborShiftFeeResult: { group: '劳务管理', title: '劳务班次计费结果' },
+  salaryCenter: { group: '薪资计算', title: '价格中心' },
+  laborShiftWork: { group: '薪资计算', title: '工作量记录' },
+  laborShiftFeeResult: { group: '薪资计算', title: '工资计算结果' },
   partner: { group: '系统管理', title: '合作方管理' },
   operationLog: { group: '系统管理', title: '操作记录' }
 }
