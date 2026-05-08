@@ -353,6 +353,26 @@ export const salaryCenterApi = {
   }
 }
 
+export const fileCenterApi = {
+  page(params) {
+    return post('/api/admin/generic/object/page', { ...params, bizType: 'FILE_CENTER' })
+  },
+  detail(id) {
+    return request(`/api/admin/generic/object/${id}`)
+  },
+  save(payload) {
+    return post('/api/admin/generic/object/save', { ...payload, bizType: 'FILE_CENTER' })
+  },
+  invalidate(id) {
+    return post('/api/admin/generic/object/invalidate', { id, bizType: 'FILE_CENTER' })
+  },
+  upload(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return requestForm('/api/open/openclaw/media/upload?bizType=file_center', formData)
+  }
+}
+
 export const laborShiftWorkApi = {
   page(params) {
     return post('/api/admin/labor/shift-work/page', params)

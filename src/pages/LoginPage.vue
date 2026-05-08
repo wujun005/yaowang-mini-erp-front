@@ -87,10 +87,11 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { authApi, setAuthSession } from '../api/wms'
 
-const emit = defineEmits(['login-success'])
+const router = useRouter()
 
 const activeTab = ref('login')
 const loginLoading = ref(false)
@@ -122,7 +123,7 @@ async function submitLogin() {
     }
     setAuthSession(session)
     ElMessage.success('登录成功')
-    emit('login-success', session)
+    router.push('/')
   } catch (error) {
     ElMessage.error(error.message || '登录失败')
   } finally {

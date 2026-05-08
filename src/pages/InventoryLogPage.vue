@@ -46,16 +46,12 @@
 
 <script setup>
 import { reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Refresh, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { inventoryLogApi } from '../api/wms'
 
-const props = defineProps({
-  initialInventoryNo: {
-    type: String,
-    default: ''
-  }
-})
+const route = useRoute()
 
 const loading = ref(false)
 const rows = ref([])
@@ -64,7 +60,7 @@ const filters = reactive({
 })
 
 watch(
-  () => props.initialInventoryNo,
+  () => route.query.inventoryNo,
   (inventoryNo) => {
     filters.inventoryNo = inventoryNo || ''
     if (filters.inventoryNo) {

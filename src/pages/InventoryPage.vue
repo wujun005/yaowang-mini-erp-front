@@ -168,11 +168,12 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Download, Edit, Refresh, Search, Upload, View } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { inventoryApi } from '../api/wms'
 
-const emit = defineEmits(['open-inventory-log'])
+const router = useRouter()
 
 const loading = ref(false)
 const templateLoading = ref(false)
@@ -271,7 +272,10 @@ function openInventoryLog(row) {
     ElMessage.warning('当前库存缺少库存编号，无法查看日志')
     return
   }
-  emit('open-inventory-log', row.inventoryNo)
+  router.push({
+    name: 'inventoryLog',
+    query: { inventoryNo: row.inventoryNo }
+  })
 }
 
 function createEditForm() {
